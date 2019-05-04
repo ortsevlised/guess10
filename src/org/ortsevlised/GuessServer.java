@@ -14,11 +14,20 @@ import static org.ortsevlised.GuessProtocol.*;
 public class GuessServer {
 
     private static final String EMPTY = "";
+    private static int portNumber;
 
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
-            System.out.println("Running Server: " + "Host=" + SERVER_ADDRESS + " Port=" + PORT);
+        if (args.length != 1) {
+            System.out.println("Starting server with default values, if you would like to specify a port" +
+                    "\nplease run the application as 'java GuessServer <port number>'\n");
+            portNumber=PORT;
+        }else {
+             portNumber = Integer.parseInt(args[0]);
+        }
+        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+
+            System.out.println("Running Server: " + "Host=" + SERVER_ADDRESS + " Port=" + portNumber);
             Socket clientSocket = serverSocket.accept();
 
             String clientAddress = clientSocket.getInetAddress().getHostAddress();
@@ -44,7 +53,7 @@ public class GuessServer {
                     break;
             }
         } catch (IOException e) {
-            System.out.println("Exception caught when trying to listen on port " + PORT + " or listening for a connection");
+            System.out.println("Exception caught when trying to listen on port " + portNumber + " or listening for a connection");
             System.out.println(e.getMessage());
         }
     }
