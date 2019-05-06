@@ -9,7 +9,7 @@ public class GuessProtocol {
     public static final String BYE = "Thanks for playing, bye!";
     public static final String PLAY_AGAIN_Y_N = ". Would you like to play again (y/n)";
 
-    public final String WELCOME = "Welcome to 10 guesses SimpleNetworkProject. ";
+    public final String WELCOME = "Welcome to 10 guesses. ";
     public final String TOO_LOW = "Too low – guess again";
     public final String TOO_HIGH = "Too high – guess again";
     public final String ENTER_YOUR_NAME = "Please enter your name";
@@ -35,6 +35,12 @@ public class GuessProtocol {
         this.numberToGuess = numberToGuess;
     }
 
+    /**
+     * Selects what message the server will send according to its state and message received
+     *
+     * @param theInput the message received
+     * @return the message to send
+     */
     public String processInput(String theInput) {
         switch (state) {
             case NEW_CONNECTION:
@@ -51,9 +57,15 @@ public class GuessProtocol {
         }
     }
 
+    /**
+     * Process the input received to make sure is a valid name
+     *
+     * @param theInput the name
+     * @return the message to send to the client
+     */
     private String processName(String theInput) {
         String theOutput;
-        if (!isANumber(theInput)) {
+        if (!isBlank(theInput) && !isANumber(theInput)) {
             name = theInput;
             theOutput = "Hi " + name + ". " + ENTER_A_NUMBER;
             state = NUMBER_RECEIVED;
@@ -64,12 +76,19 @@ public class GuessProtocol {
         return theOutput;
     }
 
+    /**
+     * Process the number received to make sure is a valid number
+     * between 1 and 1000
+     *
+     * @param theInput the string to parse to number
+     * @return the message to send to the client
+     */
     private String processNumber(String theInput) {
         String theOutput;
         if (attempts < GUESSES_LIMIT) {
             try {
                 clientNumber = Integer.parseInt(theInput);
-                if (clientNumber < 1 || clientNumber > 999) {
+                if (clientNumber < 1 || clientNumber > 1000) {
                     theOutput = NUMBER_OUT_OF_RANGE;
                     return theOutput;
                 }
@@ -77,24 +96,23 @@ public class GuessProtocol {
                 theOutput = NOT_A_NUMBER;
                 return theOutput;
             }
+
             attempts++;
 
             if (clientNumber == numberToGuess) {
                 userScore++;
                 theOutput = CLIENT_WINS + " The score is -> " + name + ": " + userScore + " Server: " + serverScore + PLAY_AGAIN_Y_N;
-                ;
                 state = AGAIN;
 
             } else if (attempts == GUESSES_LIMIT - 1) {
                 serverScore++;
                 theOutput = SERVER_WINS + " The score is -> " + name + ": " + userScore + " Server: " + serverScore + PLAY_AGAIN_Y_N;
-                ;
-                ;
                 state = AGAIN;
 
             } else {
                 theOutput = (Integer.parseInt(theInput) < numberToGuess ? TOO_LOW : TOO_HIGH);
             }
+
         } else {
             serverScore++;
             theOutput = SERVER_WINS + " The score is -> " + name + ": " + userScore + " Server: " + serverScore + PLAY_AGAIN_Y_N;
@@ -103,6 +121,11 @@ public class GuessProtocol {
         return theOutput;
     }
 
+    /**
+     * Checks whether the user wants to play again
+     * @param theInput the client answer (y/n)
+     * @return the message to send the the client
+     */
     private String evaluateIfPlayAgain(String theInput) {
         String theOutput;
         if (theInput.equalsIgnoreCase("y")) {
@@ -115,11 +138,36 @@ public class GuessProtocol {
         return theOutput;
     }
 
+    /**
+     * Checks whether the input is a number
+     *
+     * @param data the input
+     * @return true, if the String can be parsed as number
+     */
     private boolean isANumber(String data) {
         try {
             Integer.parseInt(data);
         } catch (NumberFormatException e) {
             return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether the input is blank
+     *
+     * @param cs the CharSequence to check, may be null
+     * @return true if the CharSequence is null, empty or whitespace only
+     */
+    public static boolean isBlank(final CharSequence cs) {
+        int strLen;
+        if (cs == null || (strLen = cs.length()) == 0) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(cs.charAt(i))) {
+                return false;
+            }
         }
         return true;
     }

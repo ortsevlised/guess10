@@ -21,22 +21,18 @@ public class GuessServer {
         if (args.length != 1) {
             System.out.println("Starting server with default values, if you would like to specify a port" +
                     "\nplease run the application as 'java GuessServer <port number>'\n");
-            portNumber=PORT;
-        }else {
-             portNumber = Integer.parseInt(args[0]);
+            portNumber = PORT;
+        } else {
+            portNumber = Integer.parseInt(args[0]);
         }
-        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+        try (ServerSocket serverSocket = new ServerSocket(portNumber);
+             Socket clientSocket = serverSocket.accept();
+             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
+        ) {
+            System.out.println("New client connected from " + clientSocket.getInetAddress().getHostAddress());
 
-            System.out.println("Running Server: " + "Host=" + SERVER_ADDRESS + " Port=" + portNumber);
-            Socket clientSocket = serverSocket.accept();
-
-            String clientAddress = clientSocket.getInetAddress().getHostAddress();
-            System.out.println("New client connected from " + clientAddress);
-
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String inputLine, outputLine;
-
 
             GuessProtocol gameProtocol = new GuessProtocol();
             gameProtocol.setNumberToGuess(getRandomNumber());
@@ -58,12 +54,12 @@ public class GuessServer {
         }
     }
 
-
+    /**
+     * Generates a random number
+     * @return a number between 1 and 1000
+     */
     private static int getRandomNumber() {
         int number = new Random().nextInt(1000);
-        System.out.println(number + 1);
-
         return number + 1;
     }
-
 }
